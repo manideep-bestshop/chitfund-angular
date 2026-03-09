@@ -1,0 +1,53 @@
+.main-content {
+  background-color: #f8fafc;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.avatar-circle {
+  width: 50px;
+  height: 50px;
+}
+
+.tab-container {
+  gap: 4px;
+}
+
+.btn-tab {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-weight: 500;
+  padding: 8px 16px;
+  transition: all 0.2s;
+}
+
+.btn-tab.active {
+  background-color: #f1f5f9;
+  color: #0d6efd;
+  font-weight: 700;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  opacity: 0.5;
+  z-index: 1040;
+}
+
+.modal {
+  z-index: 1050;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}

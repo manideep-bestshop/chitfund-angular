@@ -1,0 +1,30 @@
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+    opacity: 0.5;
+    z-index: 1040;
+}
+
+.modal {
+    z-index: 1050;
+}
+
+.custom-horizontal-lines tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.custom-horizontal-lines tbody tr:last-child {
+    border-bottom: none;
+}
+
+.btn-white {
+    background-color: #ffffff;
+    color: #333333;
+}
+.btn-white:hover {
+    background-color: #f8f9fa;
+}

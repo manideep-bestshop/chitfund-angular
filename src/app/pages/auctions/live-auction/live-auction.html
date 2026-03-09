@@ -1,0 +1,140 @@
+<div class="card shadow-lg border-0" style="min-height: 600px;">
+  <div class="p-4 text-white" [ngClass]="auctionClosed ? 'bg-secondary' : 'bg-primary'">
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <h4 class="fw-bold mb-0">{{ groupName }}</h4>
+          @if (auctionClosed) {
+            <span class="badge bg-dark border border-secondary">CLOSED</span>
+          } @else {
+            <span class="badge bg-danger animate-pulse">LIVE</span>
+          }
+        </div>
+        <div class="small opacity-75 d-flex align-items-center gap-1">
+          <lucide-icon name="user" [size]="14"></lucide-icon> {{ myName }}
+        </div>
+      </div>
+      <button class="btn btn-close-white bg-white bg-opacity-25 border-0 text-white p-1 rounded" (click)="close()">
+        <lucide-icon name="x" [size]="20"></lucide-icon>
+      </button>
+    </div>
+
+    <div class="text-center mt-4 mb-2">
+      <div class="text-uppercase small fw-bold opacity-75 mb-1">Current Highest Bid</div>
+      <div class="display-3 fw-bold" style="text-shadow: 0 2px 4px rgba(0,0,0,0.2)">
+        ₹{{ currentBid | number }}
+      </div>
+      @if (bidHistory.length > 0) {
+        <div class="small opacity-75 mt-1">
+          Held by <span class="fw-bold border-bottom border-white">{{ bidHistory[0].bidderName }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="card-body p-0 d-flex flex-column" style="height: auto; min-height: 400px;">
+    @if (errorMsg) {
+      <div class="p-3 pb-0">
+        <div class="alert alert-danger mb-0 d-flex align-items-center shadow-sm">
+          <lucide-icon name="alert-circle" [size]="18" class="me-2"></lucide-icon> {{ errorMsg }}
+        </div>
+      </div>
+    }
+
+    <div class="row g-0 flex-grow-1">
+      <div class="col-md-7 d-flex flex-column border-end bg-light">
+        <div class="p-2 border-bottom bg-white d-flex align-items-center justify-content-between small text-muted">
+          <span class="fw-bold"><lucide-icon name="clock" [size]="14" class="me-1"></lucide-icon> Activity Log</span>
+          <span>{{ bidHistory.length }} Bids</span>
+        </div>
+        
+        <div class="flex-grow-1 overflow-auto p-3" style="max-height: 500px;">
+          @if (bidHistory.length === 0) {
+            <div class="text-center text-muted mt-5 pt-5 opacity-50">
+              <lucide-icon name="gavel" [size]="48" class="mb-3"></lucide-icon>
+              <p>No bids yet.<br>Be the first to start the auction!</p>
+            </div>
+          } @else {
+            @for (bid of bidHistory; track $index) {
+              <div class="d-flex align-items-center mb-3" [class.scale-in]="$first">
+                <div class="rounded-circle p-2 me-3" [ngClass]="$first ? 'bg-success text-white' : 'bg-white border text-muted'">
+                  @if ($first) { <lucide-icon name="trophy" [size]="18"></lucide-icon> }
+                  @else { <lucide-icon name="gavel" [size]="16"></lucide-icon> }
+                </div>
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold" [ngClass]="$first ? 'text-success' : 'text-dark'">{{ bid.bidderName }}</span>
+                    <span class="small text-muted">{{ bid.time }}</span>
+                  </div>
+                  <div class="small">
+                    Placed a bid of <strong class="font-monospace">₹{{ bid.amount | number }}</strong>
+                  </div>
+                </div>
+              </div>
+            }
+          }
+          <div #historyEnd></div>
+        </div>
+      </div>
+
+      <div class="col-md-5 bg-white p-4 d-flex flex-column">
+        @if (!auctionClosed) {
+          <div class="text-center mb-4">
+            <h6 class="fw-bold text-dark mb-3">Place Your Bid</h6>
+            
+            <div class="d-flex gap-2 justify-content-center mb-3">
+              <button class="btn btn-outline-primary btn-sm" (click)="quickBid(100)" [disabled]="isAdmin || !myMemberId">+ ₹100</button>
+              <button class="btn btn-outline-primary btn-sm" (click)="quickBid(500)" [disabled]="isAdmin || !myMemberId">+ ₹500</button>
+              <button class="btn btn-outline-primary btn-sm" (click)="quickBid(1000)" [disabled]="isAdmin || !myMemberId">+ ₹1000</button>
+            </div>
+
+            <div class="mb-3">
+              <input type="number" class="form-control form-control-lg text-center fw-bold font-monospace" 
+                     placeholder="Custom Amount" [(ngModel)]="bidAmount" [disabled]="loading || isAdmin || !myMemberId">
+            </div>
+
+            <button class="btn btn-primary btn-lg w-100 py-3 fw-bold shadow-sm"
+                    (click)="handlePlaceBid()" [disabled]="loading || isAdmin || !myMemberId">
+              @if (loading) { <div class="spinner-border spinner-border-sm me-2"></div> }
+              @else { <lucide-icon name="trending-up" [size]="20" class="me-2"></lucide-icon> }
+              PLACE BID
+            </button>
+
+            @if (isAdmin) {
+              <div class="alert alert-warning small mt-3 border-0">
+                <lucide-icon name="info" [size]="14" class="me-1"></lucide-icon>
+                Admins monitor only.
+              </div>
+            } @else if (!myMemberId) {
+              <div class="alert alert-danger small mt-3 border-0">
+                <lucide-icon name="x-circle" [size]="14" class="me-1"></lucide-icon>
+                Membership required to bid.
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="text-center mb-4">
+            <div class="bg-success bg-opacity-10 text-success p-4 rounded-circle d-inline-block mb-3">
+              <lucide-icon name="check-circle" [size]="48"></lucide-icon>
+            </div>
+            <h4 class="fw-bold text-success">Auction Closed</h4>
+            <div class="p-3 bg-light rounded border mt-3">
+              <div class="small text-muted text-uppercase fw-bold">Winning Bid</div>
+              <div class="fs-3 fw-bold text-dark">₹{{ currentBid | number }}</div>
+              <div class="small text-primary mt-1">{{ bidHistory[0]?.bidderName || 'No Bids' }}</div>
+            </div>
+          </div>
+        }
+
+        @if (isAdmin && !auctionClosed) {
+          <div class="mt-auto pt-4 border-top text-center">
+            <small class="text-muted d-block mb-2">Admin Management</small>
+            <button class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center" (click)="handleCloseAuction()">
+              <lucide-icon name="power" [size]="16" class="me-2"></lucide-icon> Force Close Auction
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

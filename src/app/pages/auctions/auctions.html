@@ -1,0 +1,180 @@
+@if (activeAuctionId) {
+  @let active = getActiveAuction();
+  <div class="container mt-4">
+    <app-live-auction
+      [auctionId]="activeAuctionId"
+      [chitGroupId]="active?.chitGroupId || ''"
+      [initialAmount]="active?.highestBidAmount || active?.baseAmount || 0"
+      [groupName]="active?.groupName || 'Live Auction'"
+      (onClose)="activeAuctionId = null; fetchAuctions()">
+    </app-live-auction>
+  </div>
+} 
+@else {
+  <div class="main-container">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
+      <h2 class="fw-bold text-dark mb-0">Auctions</h2>
+      @if (isAdminOrAgent) {
+        <div class="d-flex gap-2">
+          <button class="btn btn-white border shadow-sm d-flex align-items-center" (click)="handleExportExcel()">
+            <lucide-icon name="download" [size]="18" class="me-2 text-success"></lucide-icon> Export
+          </button>
+          <button class="btn btn-primary shadow-sm d-flex align-items-center px-4" (click)="handleShowModal()">
+            <lucide-icon name="plus" [size]="18" class="me-2"></lucide-icon> Schedule
+          </button>
+        </div>
+      }
+    </div>
+
+    @if (alert) {
+      <div class="alert alert-{{alert.type === 'danger' ? 'danger' : (alert.type === 'warning' ? 'warning' : 'success')}} alert-dismissible fade show">
+        {{ alert.message }}
+        <button class="btn-close" (click)="alert = null"></button>
+      </div>
+    }
+
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body p-3">
+        <div class="row g-2">
+          <div class="col-md-5">
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0 text-muted"><lucide-icon name="search" [size]="18"></lucide-icon></span>
+              <input type="text" class="form-control border-start-0 shadow-none" placeholder="Search group, winner, or status..." [(ngModel)]="searchQuery">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <input type="date" class="form-control shadow-none" [(ngModel)]="fromDate">
+          </div>
+          <div class="col-md-3">
+            <input type="date" class="form-control shadow-none" [(ngModel)]="toDate">
+          </div>
+          <div class="col-md-1 d-grid">
+            <button class="btn btn-light border" (click)="searchQuery=''; fromDate=''; toDate=''">Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-0">
+        @if (loading) {
+          <div class="text-center p-5"><div class="spinner-border text-primary"></div></div>
+        } @else {
+          <div class="table-responsive">
+            <table class="table hover align-middle mb-0 custom-horizontal-lines">
+              <thead class="bg-light text-muted small text-uppercase">
+                <tr>
+                  <th class="ps-4 py-3 border-0 fw-bold">Group Details</th>
+                  <th class="py-3 border-0 fw-bold">Schedule</th>
+                  <th class="py-3 border-0 fw-bold">Financials</th>
+                  <th class="py-3 border-0 fw-bold">Winner</th>
+                  <th class="py-3 border-0 text-center fw-bold">Status</th>
+                  <th class="py-3 border-0 text-end pe-4 fw-bold">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (auction of filteredAuctions; track auction.auctionId) {
+                  <tr [class.opacity-50]="auction.status === 'Cancelled'">
+                    <td class="ps-4">
+                      <div class="fw-bold text-dark">{{ auction.groupName }}</div>
+                      <span class="badge bg-light text-dark border fw-normal mt-1">Installment #{{ auction.installmentNumber }}</span>
+                    </td>
+                    <td>
+                      <div class="small text-muted d-flex align-items-center"><lucide-icon name="calendar" [size]="14" class="me-2"></lucide-icon> {{ auction.auctionDate | date:'shortDate' }}</div>
+                      <div class="small text-muted d-flex align-items-center mt-1"><lucide-icon name="clock" [size]="14" class="me-2"></lucide-icon> {{ auction.auctionDate | date:'shortTime' }}</div>
+                    </td>
+                    <td>
+                      <div class="small text-muted">Base: ₹{{ auction.baseAmount | number }}</div>
+                      @if (auction.highestBidAmount) { <div class="text-success fw-bold">High: ₹{{ auction.highestBidAmount | number }}</div> }
+                    </td>
+                    <td>{{ auction.winnerName || '-' }}</td>
+                    <td class="text-center">
+                      @let config = getStatusConfig(auction.status);
+                      <span class="rounded-pill px-3 py-2 d-inline-flex align-items-center fw-semibold text-white" [style.backgroundColor]="config.bg" style="font-size: 0.75rem;">
+                        <lucide-icon [name]="config.icon" [size]="12" class="me-1"></lucide-icon> {{ config.label }}
+                      </span>
+                    </td>
+                    <td class="text-end pe-4">
+                      <div class="d-flex justify-content-end align-items-center gap-1">
+                        @if (auction.status === 'InProgress') {
+                          <button class="btn btn-success btn-sm d-flex align-items-center shadow-sm" (click)="enterLiveMode(auction.auctionId)">
+                            <lucide-icon name="gavel" [size]="16" class="me-1"></lucide-icon> Join
+                          </button>
+                        }
+                        @if (isAdminOrAgent) {
+                          @if (auction.status === 'InProgress') {
+                            <button class="btn btn-icon text-warning p-1" title="Force Close" (click)="handleCloseAuction(auction.auctionId)"><lucide-icon name="power" [size]="18"></lucide-icon></button>
+                          }
+                          <button class="btn btn-icon text-primary p-1" title="Edit" (click)="handleShowModal(auction)" [disabled]="auction.status === 'Completed' || auction.status === 'Cancelled'"><lucide-icon name="edit-2" [size]="18"></lucide-icon></button>
+                          <button class="btn btn-icon text-danger p-1" title="Delete" (click)="handleDelete(auction.auctionId)"><lucide-icon name="trash-2" [size]="18"></lucide-icon></button>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+
+    @if (showModal) {
+      <div class="modal-backdrop fade show"></div>
+      <div class="modal fade show d-block" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0">
+              <h5 class="modal-title fw-bold">{{ editingAuction ? 'Edit Auction' : 'Schedule Auction' }}</h5>
+              <button class="btn-close" (click)="showModal = false"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row g-3">
+                @if (!editingAuction) {
+                  <div class="col-12">
+                    <label class="small fw-bold">Chit Group</label>
+                    <select class="form-select" [(ngModel)]="formData.chitGroupId" (change)="handleGroupChange()">
+                      <option value="">-- Select Group --</option>
+                      @for (g of chitGroups; track g.chitGroupId) { <option [value]="g.chitGroupId">{{ g.groupName }} ({{ g.groupCode }})</option> }
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="small fw-bold">Installment</label>
+                    <input type="text" class="form-control bg-light" [value]="getInstallmentText()" readonly>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="small fw-bold">Base Amount (₹)</label>
+                    <input type="number" class="form-control" [(ngModel)]="formData.baseAmount">
+                  </div>
+                }
+                <div class="col-md-6">
+                  <label class="small fw-bold">Auction Date</label>
+                  <input type="datetime-local" class="form-control" [(ngModel)]="formData.auctionDate">
+                </div>
+                <div class="col-md-6">
+                  <label class="small fw-bold">Status</label>
+                  <select class="form-select" [(ngModel)]="formData.status" [disabled]="!editingAuction">
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="InProgress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </div>
+                @if (editingAuction) {
+                  <div class="col-12">
+                    <label class="small fw-bold">Current Highest Bid</label>
+                    <input type="number" class="form-control" [(ngModel)]="formData.highestBidAmount">
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="modal-footer border-0">
+              <button class="btn btn-light" (click)="showModal = false">Cancel</button>
+              <button class="btn btn-primary px-4" (click)="handleSubmit()" [disabled]="!formData.installmentId && !editingAuction">Save Schedule</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+}

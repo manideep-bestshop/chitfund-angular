@@ -1,0 +1,81 @@
+<div class="container mt-4">
+  <div class="card shadow-sm mx-auto" style="max-width: 600px; border: none; border-radius: 12px;">
+    <div class="card-body p-4">
+      
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <h4 class="card-title mb-0 fw-bold">WhatsApp Notifications</h4>
+        @if (isSaving) {
+          <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+        }
+      </div>
+      
+      <p class="text-muted mb-4 pb-3 border-bottom small">
+        Choose which alerts you want to receive on your registered phone number.
+      </p>
+
+      <div class="d-flex flex-column gap-4">
+        
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="pe-3">
+            <h6 class="mb-1 fw-semibold">Upcoming Payment Reminders</h6>
+            <small class="text-muted d-block" style="font-size: 0.85rem;">Alerts 3 days before your installment due date.</small>
+          </div>
+          <div class="form-check form-switch m-0">
+            <input class="form-check-input custom-switch" type="checkbox" 
+                   [checked]="preferences.MonthlyReminder" 
+                   (change)="handleToggle('MonthlyReminder')">
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="pe-3">
+            <h6 class="mb-1 fw-semibold">Overdue Alerts</h6>
+            <small class="text-muted d-block" style="font-size: 0.85rem;">Warnings for missed payments and late fees.</small>
+          </div>
+          <div class="form-check form-switch m-0">
+            <input class="form-check-input custom-switch" type="checkbox" 
+                   [checked]="preferences.OverdueReminder" 
+                   (change)="handleToggle('OverdueReminder')">
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="pe-3">
+            <h6 class="mb-1 fw-semibold">Payment Receipts</h6>
+            <small class="text-muted d-block" style="font-size: 0.85rem;">Instant confirmation when your payment is recorded.</small>
+          </div>
+          <div class="form-check form-switch m-0">
+            <input class="form-check-input custom-switch" type="checkbox" 
+                   [checked]="preferences.PaymentReceipt" 
+                   (change)="handleToggle('PaymentReceipt')">
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="pe-3">
+            <h6 class="mb-1 fw-semibold">Auction Invitations</h6>
+            <small class="text-muted d-block" style="font-size: 0.85rem;">Get notified the moment a new group auction begins.</small>
+          </div>
+          <div class="form-check form-switch m-0">
+            <input class="form-check-input custom-switch" type="checkbox" 
+                   [checked]="preferences.AuctionStart" 
+                   (change)="handleToggle('AuctionStart')">
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="pe-3">
+            <h6 class="mb-1 fw-semibold">Auction Winners</h6>
+            <small class="text-muted d-block" style="font-size: 0.85rem;">Receive congratulations and dividend updates when an auction closes.</small>
+          </div>
+          <div class="form-check form-switch m-0">
+            <input class="form-check-input custom-switch" type="checkbox" 
+                   [checked]="preferences.AuctionWinner" 
+                   (change)="handleToggle('AuctionWinner')">
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

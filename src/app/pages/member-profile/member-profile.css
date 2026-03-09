@@ -1,0 +1,35 @@
+.card {
+  border-radius: 12px;
+  transition: transform 0.2s ease;
+}
+
+.shadow-sm {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.nav-tabs .nav-link {
+  color: #64748b;
+  border: none;
+  padding: 0.8rem 1.5rem;
+}
+
+.nav-tabs .nav-link.active {
+  color: #2563eb;
+  border-bottom: 3px solid #2563eb;
+  background: transparent;
+}
+
+.modal-backdrop {
+  z-index: 1040 !important;
+}
+
+.modal {
+  z-index: 1050 !important;
+}
+
+.table thead th {
+  background-color: #f8fafc;
+  color: #475569;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}

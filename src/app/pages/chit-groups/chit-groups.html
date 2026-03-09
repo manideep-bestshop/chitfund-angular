@@ -1,0 +1,272 @@
+<div class="main-container">
+  <div class="mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+      <div class="d-flex align-items-center gap-3">
+        @if (viewMode === 'detail') {
+          <button class="btn btn-light rounded-circle p-2 shadow-sm border" (click)="viewMode = 'list'">
+            <lucide-icon name="arrow-left" [size]="20"></lucide-icon>
+          </button>
+        }
+        <h2 class="fw-bold text-dark mb-0">{{ viewMode === 'list' ? 'Chit Groups' : selectedGroup?.groupName }}</h2>
+      </div>
+
+      <div class="d-flex gap-2 align-items-center flex-wrap">
+        <button class="btn btn-white border shadow-sm position-relative bg-white text-nowrap px-3" (click)="navigateRequests()">
+          <lucide-icon name="file-text" [size]="18" class="me-2 text-primary"></lucide-icon> Requests
+          @if (pendingCount > 0) {
+            <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-circle border border-light p-1">{{ pendingCount }}</span>
+          }
+        </button>
+
+        @if (viewMode === 'list') {
+          <div class="form-check form-switch ms-2 fw-bold text-secondary small">
+            <input class="form-check-input" type="checkbox" [(ngModel)]="showInactiveGroups">
+            <label class="form-check-label">Inactive</label>
+          </div>
+          <button class="btn btn-primary shadow-sm px-4 text-nowrap fw-bold" (click)="openCreateGroupModal()">
+            <lucide-icon name="plus" [size]="18" class="me-1"></lucide-icon> New Group
+          </button>
+        } @else {
+          <div class="form-check form-switch ms-2 fw-bold text-secondary small">
+            <input class="form-check-input" type="checkbox" [(ngModel)]="showInactiveMembers">
+            <label class="form-check-label">Deactivated</label>
+          </div>
+          <button class="btn btn-success shadow-sm px-4 text-nowrap fw-bold" (click)="showMemberModal = true">
+            <lucide-icon name="user-plus" [size]="18" class="me-1"></lucide-icon> Add Member
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="input-group" style="max-width: 400px;">
+      <span class="input-group-text bg-white border-end-0 text-muted"><lucide-icon name="search" [size]="16"></lucide-icon></span>
+      <input type="text" class="form-control border-start-0 shadow-none" [placeholder]="viewMode === 'list' ? 'Search groups...' : 'Search members...'" [(ngModel)]="searchTerm">
+    </div>
+  </div>
+
+  @if (alert) {
+    <div class="alert alert-{{alert.type}} alert-dismissible fade show shadow-sm border-0">
+      {{ alert.message }}
+      <button type="button" class="btn-close" (click)="alert = null"></button>
+    </div>
+  }
+
+  @if (loading) {
+    <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+  } @else {
+    @if (viewMode === 'list') {
+      <div class="row g-4">
+        @for (group of displayedGroups; track group.chitGroupId) {
+          @let progress = getProgress(group.startDate, group.durationMonths);
+          @let isGreyed = group.status === 'Cancelled' || group.status === 'Suspended';
+          <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card chit-card h-100" [class.inactive-style]="isGreyed" (click)="handleCardClick(group)">
+              <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <div class="d-flex flex-column">
+                    <h6 class="fw-bold mb-1 text-dark">{{ group.groupName }}</h6>
+                    <span class="badge bg-{{ getStatusVariant(group.status) }} rounded-pill px-2 py-1 fw-bold align-self-start" style="font-size: 0.6rem;">
+                      {{ group.status | uppercase }}
+                    </span>
+                  </div>
+                  
+                  <div class="dropdown" (click)="$event.stopPropagation()">
+                    <button class="btn btn-link no-caret p-1 text-muted" type="button" data-bs-toggle="dropdown">
+                      <lucide-icon name="more-vertical" [size]="16"></lucide-icon>
+                    </button>
+                    <ul class="dropdown-menu shadow border-0">
+                      <li><a class="dropdown-item" (click)="openEditGroupModal($event, group)"><lucide-icon name="edit-2" [size]="14" class="me-2 text-primary"></lucide-icon> Edit Details</a></li>
+                      <li><a class="dropdown-item" (click)="toggleGroupDeactivation($event, group)">
+                        <lucide-icon name="power" [size]="14" [class.text-warning]="group.status === 'Active'" [class.text-success]="group.status !== 'Active'" class="me-2"></lucide-icon> 
+                        {{ group.status === 'Active' ? 'Deactivate' : 'Activate' }}
+                      </a></li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li><a class="dropdown-item text-danger" (click)="groupToDelete = group.chitGroupId; showDeleteGroupModal = true">
+                        <lucide-icon name="trash-2" [size]="14" class="me-2"></lucide-icon> Delete Group
+                      </a></li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="chit-value mb-3">₹ {{ group.totalAmount | number:'1.0-0':'en-IN' }}</div>
+                
+                <div class="row mb-4">
+                  <div class="col-6">
+                    <div class="label-text mb-1">Monthly</div>
+                    <div class="data-text">₹ {{ group.monthlyAmount | number:'1.0-0':'en-IN' }}</div>
+                  </div>
+                  <div class="col-6 text-end">
+                    <div class="label-text mb-1">Duration</div>
+                    <div class="data-text">{{ group.durationMonths }} Months</div>
+                  </div>
+                </div>
+
+                <div class="mt-2">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="label-text" style="font-size: 0.6rem;">Timeline Progress</span>
+                    <span class="small fw-bold text-primary">{{ progress.percentage }}%</span>
+                  </div>
+                  <div class="progress rounded-pill bg-light" style="height: 6px;">
+                    <div class="progress-bar" [style.width.%]="progress.percentage" 
+                         [class.bg-secondary]="isGreyed" 
+                         [class.bg-success]="!isGreyed && progress.percentage === 100"
+                         [class.bg-primary]="!isGreyed && progress.percentage < 100"></div>
+                  </div>
+                  <div class="text-end mt-1" style="font-size: 0.65rem; font-weight: 700; color: #94a3b8;">
+                    {{ progress.elapsed }} / {{ group.durationMonths }} Months Passed
+                  </div>
+                </div>
+              </div>
+              <div class="bg-light p-2 text-center border-top small fw-bold text-secondary">
+                {{ group.memberCount }} Members Enrolled
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 15px;">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="bg-light text-muted small text-uppercase">
+            <tr><th class="ps-4 py-3 border-0">Member Info</th><th class="py-3 border-0 text-center">Status</th><th class="py-3 border-0 text-end pe-4">Actions</th></tr>
+          </thead>
+          <tbody>
+            @for (m of displayedMembers; track m.chitMemberId) {
+              @let isActive = m.isActive !== undefined ? m.isActive : m.isactive;
+              <tr [class.inactive-style]="!isActive">
+                <td class="ps-4">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" 
+                         [class]="isActive ? 'bg-primary bg-opacity-10 text-primary' : 'bg-secondary bg-opacity-10 text-secondary'" 
+                         style="width:40px; height:40px;">{{ m.userName.charAt(0) }}</div>
+                    <div>
+                      <div class="fw-bold" [class]="isActive ? 'text-dark' : 'text-muted text-decoration-line-through'">{{ m.userName }}</div>
+                      <small class="text-muted">{{ m.userEmail }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <span class="badge bg-{{ isActive ? 'success' : 'danger' }} bg-opacity-10 text-reset fw-bold px-3 py-2 rounded-pill">
+                    {{ isActive ? 'ACTIVE' : 'INACTIVE' }}
+                  </span>
+                </td>
+                <td class="text-end pe-4">
+                  <div class="d-flex justify-content-end gap-2">
+                    <button class="btn btn-light btn-sm border-0 bg-transparent" [title]="isActive ? 'Deactivate' : 'Activate'" (click)="toggleMemberStatus(m.chitMemberId)">
+                      <lucide-icon name="power" [size]="18" [class.text-warning]="isActive" [class.text-success]="!isActive"></lucide-icon>
+                    </button>
+                    <button class="btn btn-light btn-sm border-0 bg-transparent text-danger" title="Remove Member" (click)="handleDeleteMember(m.chitMemberId)">
+                      <lucide-icon name="trash-2" [size]="18"></lucide-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>
+
+@if (showGroupModal) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header border-0 px-4 pt-4">
+          <h5 class="modal-title fw-bold">{{ editingGroup ? 'Edit Group' : 'Create Group' }}</h5>
+          <button type="button" class="btn-close" (click)="showGroupModal = false"></button>
+        </div>
+        <div class="modal-body px-4 pb-4">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <label class="fw-bold small mb-1">Name</label>
+              <input type="text" class="form-control" [class.is-invalid]="groupErrors['groupName']" maxlength="15" [(ngModel)]="groupFormData.groupName">
+              <div class="invalid-feedback">{{ groupErrors['groupName'] }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="fw-bold small mb-1">Code</label>
+              <input type="text" class="form-control" [class.is-invalid]="groupErrors['groupCode']" maxlength="15" [(ngModel)]="groupFormData.groupCode">
+              <div class="invalid-feedback">{{ groupErrors['groupCode'] }}</div>
+            </div>
+            <div class="col-md-4">
+              <label class="fw-bold small mb-1">Value (₹)</label>
+              <input type="number" class="form-control" [class.is-invalid]="groupErrors['totalAmount']" [(ngModel)]="groupFormData.totalAmount">
+              <div class="invalid-feedback">{{ groupErrors['totalAmount'] }}</div>
+            </div>
+            <div class="col-md-4">
+              <label class="fw-bold small mb-1">Monthly (₹)</label>
+              <input type="number" class="form-control" [class.is-invalid]="groupErrors['monthlyAmount']" [(ngModel)]="groupFormData.monthlyAmount">
+              <div class="invalid-feedback">{{ groupErrors['monthlyAmount'] }}</div>
+            </div>
+            <div class="col-md-4">
+              <label class="fw-bold small mb-1">Duration (M)</label>
+              <input type="number" class="form-control" [class.is-invalid]="groupErrors['durationMonths']" [(ngModel)]="groupFormData.durationMonths">
+              <div class="invalid-feedback">{{ groupErrors['durationMonths'] }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="fw-bold small mb-1">Comm %</label>
+              <input type="number" class="form-control" [class.is-invalid]="groupErrors['commissionPercentage']" [(ngModel)]="groupFormData.commissionPercentage">
+              <div class="invalid-feedback">{{ groupErrors['commissionPercentage'] }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="fw-bold small mb-1">Start Date</label>
+              <input type="date" class="form-control" [class.is-invalid]="groupErrors['startDate']" [(ngModel)]="groupFormData.startDate">
+              <div class="invalid-feedback">{{ groupErrors['startDate'] }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 px-4 pb-4">
+          <button class="btn btn-light" (click)="showGroupModal = false">Cancel</button>
+          <button class="btn btn-primary px-4" (click)="handleGroupSubmit()">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showMemberModal) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header border-0 px-4 pt-4">
+          <h5 class="modal-title fw-bold">Enroll Member</h5>
+          <button type="button" class="btn-close" (click)="showMemberModal = false"></button>
+        </div>
+        <div class="modal-body px-4 pb-4">
+          <label class="small fw-bold mb-1">Select User</label>
+          <select class="form-select" [(ngModel)]="memberFormData.userId">
+            <option value="">-- Choose User --</option>
+            @for (u of availableUsers; track u.userId) {
+              <option [value]="u.userId">{{ u.firstName }} {{ u.lastName }}</option>
+            }
+          </select>
+        </div>
+        <div class="modal-footer border-0">
+          <button class="btn btn-light" (click)="showMemberModal = false">Cancel</button>
+          <button class="btn btn-success px-4" (click)="handleAddMember()">Add to Group</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showDeleteGroupModal) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-body text-center p-4">
+          <lucide-icon name="alert-circle" [size]="48" class="text-danger mb-3 opacity-50"></lucide-icon>
+          <h5 class="fw-bold">Delete Group?</h5>
+          <div class="d-flex gap-2 justify-content-center mt-4">
+            <button class="btn btn-light" (click)="showDeleteGroupModal = false">Cancel</button>
+            <button class="btn btn-danger px-4" (click)="confirmDeleteGroup()">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

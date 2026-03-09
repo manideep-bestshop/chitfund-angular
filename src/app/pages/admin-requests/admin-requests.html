@@ -1,0 +1,158 @@
+<div class="main-content">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">Member Requests</h2>
+      <p class="text-muted mb-0">Manage and approve group entry applications</p>
+    </div>
+    <div class="bg-white p-1 rounded border d-flex shadow-sm tab-container">
+      <button 
+        class="btn btn-tab" 
+        [class.active]="activeTab === 'pending'"
+        (click)="switchTab('pending')"
+      >
+        Pending <span class="badge ms-2" [ngClass]="activeTab === 'pending' ? 'bg-primary' : 'bg-secondary'">{{ requests.length }}</span>
+      </button>
+      <button 
+        class="btn btn-tab" 
+        [class.active]="activeTab === 'history'"
+        (click)="switchTab('history')"
+      >
+        History
+      </button>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="text-center p-5">
+      <div class="spinner-border text-primary"></div>
+    </div>
+  } @else {
+    <div class="row g-3">
+      @if (activeTab === 'pending') {
+        @if (requests.length > 0) {
+          @for (req of requests; track req.requestId) {
+            <div class="col-lg-6 col-xl-4">
+              <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="d-flex align-items-center">
+                      <div 
+                        class="rounded-circle text-white d-flex align-items-center justify-content-center me-3 fw-bold shadow-sm avatar-circle"
+                        [style.backgroundColor]="getRandomColor(req.memberName)"
+                      >
+                        {{ getInitials(req.memberName) }}
+                      </div>
+                      <div>
+                        <h6 class="fw-bold mb-0 text-dark">{{ req.memberName }}</h6>
+                        <div class="text-muted small">ID: {{ req.memberId }}</div>
+                      </div>
+                    </div>
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 fw-normal px-2 py-1 d-flex align-items-center">
+                      <lucide-icon name="shield-check" [size]="12" class="me-1"></lucide-icon> KYC Verified
+                    </span>
+                  </div>
+
+                  <div class="bg-light rounded p-3 mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                      <span class="text-muted small d-flex align-items-center"><lucide-icon name="file-text" [size]="14" class="me-1"></lucide-icon> Applying For</span>
+                      <span class="fw-bold text-dark">{{ req.groupName }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                      <span class="text-muted small d-flex align-items-center"><lucide-icon name="indian-rupee" [size]="14" class="me-1"></lucide-icon> Commitment</span>
+                      <span class="fw-bold text-primary">₹{{ req.monthlyAmount | number }}/mo</span>
+                    </div>
+                  </div>
+
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-outline-danger w-50 d-flex align-items-center justify-content-center" (click)="handleAction(req, 'reject')">
+                      <lucide-icon name="x-circle" [size]="16" class="me-2"></lucide-icon> Reject
+                    </button>
+                    <button class="btn btn-success w-50 text-white d-flex align-items-center justify-content-center" (click)="handleAction(req, 'approve')">
+                      <lucide-icon name="check-circle" [size]="16" class="me-2"></lucide-icon> Approve
+                    </button>
+                  </div>
+                </div>
+                <div class="card-footer bg-white border-0 text-center pb-3">
+                  <small class="text-muted d-flex align-items-center justify-content-center">
+                    <lucide-icon name="clock" [size]="12" class="me-1"></lucide-icon> Requested on {{ req.requestDate | date }}
+                  </small>
+                </div>
+              </div>
+            </div>
+          }
+        } @else {
+          <div class="col-12">
+            <div class="text-center p-5 text-muted">
+              <div class="bg-light rounded-circle p-3 d-inline-block mb-3">
+                <lucide-icon name="check-circle" [size]="32" class="text-success opacity-50"></lucide-icon>
+              </div>
+              <h5>All caught up!</h5>
+              <p>No pending requests to review.</p>
+            </div>
+          </div>
+        }
+      } @else {
+        @if (historyList.length > 0) {
+          @for (req of historyList; track req.requestId) {
+            <div class="col-12">
+              <div class="card border-0 shadow-sm mb-2">
+                <div class="card-body py-3 d-flex align-items-center justify-content-between">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" 
+                         [ngClass]="req.status === 'Approved' ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'">
+                      <lucide-icon [name]="req.status === 'Approved' ? 'check-circle' : 'x-circle'" [size]="20"></lucide-icon>
+                    </div>
+                    <div>
+                      <h6 class="mb-0 fw-bold">{{ req.memberName }} <span class="text-muted fw-normal small">was {{ req.status | lowercase }} for</span> {{ req.groupName }}</h6>
+                      <small class="text-muted">{{ req.requestDate | date }}</small>
+                    </div>
+                  </div>
+                  <span class="badge rounded-pill px-3 py-2" [ngClass]="req.status === 'Approved' ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'">
+                    {{ req.status }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          }
+        } @else {
+          <div class="col-12">
+            <div class="text-center p-5 text-muted">
+              <lucide-icon name="history" [size]="32" class="mb-3 opacity-50"></lucide-icon>
+              <p>No history found.</p>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  }
+
+  @if (selectedRequest) {
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show d-block" tabindex="-1">
+      <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+          <div class="modal-body text-center p-4">
+            <div class="rounded-circle p-3 d-inline-flex mb-3" 
+                 [ngClass]="actionType === 'approve' ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'">
+              <lucide-icon [name]="actionType === 'approve' ? 'check-circle' : 'alert-circle'" [size]="32"></lucide-icon>
+            </div>
+            <h5 class="fw-bold mb-2">{{ actionType === 'approve' ? 'Approve Request?' : 'Reject Request?' }}</h5>
+            <p class="text-muted small mb-4">
+              Are you sure you want to {{ actionType }} <strong>{{ selectedRequest.memberName }}</strong> for <strong>{{ selectedRequest.groupName }}</strong>?
+            </p>
+            <div class="d-flex gap-2 justify-content-center">
+              <button class="btn btn-light" (click)="selectedRequest = null">Cancel</button>
+              <button 
+                class="btn" 
+                [ngClass]="actionType === 'approve' ? 'btn-success' : 'btn-danger'"
+                (click)="confirmAction()"
+              >
+                Confirm {{ actionType === 'approve' ? 'Approval' : 'Rejection' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

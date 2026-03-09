@@ -1,0 +1,313 @@
+<div style="background-color: #f8fafc; min-height: 100vh; padding: 24px;">
+  
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">Payments</h2>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-white border shadow-sm d-flex align-items-center text-success" (click)="handleExportToExcel()" [disabled]="processedPayments.length === 0">
+            <lucide-icon name="download" [size]="18" class="me-2"></lucide-icon> Export
+        </button>
+        <button class="btn btn-primary shadow-sm d-flex align-items-center px-4" (click)="handleOpenRecordPaymentModal()">
+            <lucide-icon name="plus" [size]="18" class="me-2"></lucide-icon> Record Payment
+        </button>
+    </div>
+  </div>
+
+  @if (alert) {
+    <div class="alert alert-{{alert.type === 'danger' ? 'danger' : 'success'}} alert-dismissible fade show">
+        {{ alert.message }}
+        <button type="button" class="btn-close" (click)="alert = null"></button>
+    </div>
+  }
+  @if (pageError) {
+    <div class="alert alert-danger alert-dismissible fade show">
+        {{ pageError }}
+        <button type="button" class="btn-close" (click)="pageError = null"></button>
+    </div>
+  }
+
+  <div class="row mb-4 g-3">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-white text-black h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3"><lucide-icon name="indian-rupee" [size]="24" class="text-primary"></lucide-icon></div>
+                <div>
+                    <div class="small text-uppercase text-muted fw-bold">Total Collected</div>
+                    <h4 class="fw-bold mb-0 text-dark">₹{{ totalCollected | number }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-white h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="bg-warning bg-opacity-10 p-3 rounded-circle me-3"><lucide-icon name="clock" [size]="24" class="text-warning"></lucide-icon></div>
+                <div>
+                    <div class="small text-uppercase text-muted fw-bold">Pending Amount</div>
+                    <h4 class="fw-bold mb-0 text-dark">₹{{ totalPending | number }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-white h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="bg-success bg-opacity-10 p-3 rounded-circle me-3"><lucide-icon name="trending-up" [size]="24" class="text-success"></lucide-icon></div>
+                <div>
+                    <div class="small text-uppercase text-muted fw-bold">Transaction Count</div>
+                    <h4 class="fw-bold mb-0 text-dark">{{ processedPayments.length }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-3">
+      <div class="row g-2">
+        <div class="col-md-3">
+            <label class="small fw-bold text-muted mb-1">Group</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted"><lucide-icon name="filter" [size]="16"></lucide-icon></span>
+                <select class="form-select shadow-none border-start-0 border-light bg-light" [(ngModel)]="filters.groupName">
+                    <option value="">All Groups</option>
+                    @for (g of uniqueGroups; track g) { <option [value]="g">{{ g }}</option> }
+                </select>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <label class="small fw-bold text-muted mb-auto">Member</label>
+            <select class="form-select shadow-none border-light bg-light mt-1" [(ngModel)]="filters.memberName">
+                <option value="">All Members</option>
+                @for (m of uniqueMembers; track m) { <option [value]="m">{{ m }}</option> }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="small fw-bold text-muted mb-1">Status</label>
+            <select class="form-select shadow-none border-light bg-light" [(ngModel)]="filters.status">
+                <option value="">All</option>
+                <option value="Completed">Completed</option>
+                <option value="Pending">Pending</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="small fw-bold text-muted mb-1">Date Range</label>
+            <div class="d-flex gap-1">
+                <input type="date" class="form-control shadow-none border-light bg-light p-1 small" [(ngModel)]="filters.startDate" />
+                <input type="date" class="form-control shadow-none border-light bg-light p-1 small" [(ngModel)]="filters.endDate" />
+            </div>
+        </div>
+        <div class="col-md-1 d-flex align-items-end ms-auto">
+            <button class="btn btn-light w-100 border text-muted" (click)="clearFilters()">Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      @if (loading) {
+        <div class="text-center p-5"><div class="spinner-border text-primary"></div></div>
+      } @else {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 custom-horizontal-lines">
+              <thead class="bg-light text-muted small text-uppercase">
+                <tr>
+                  <th class="ps-4 py-3 border-0 fw-bold">Member Info</th>
+                  <th class="py-3 border-0 fw-bold">Group Info</th>
+                  <th class="py-3 border-0 fw-bold">Payment</th>
+                  <th class="py-3 border-0 fw-bold">Details</th>
+                  <th class="py-3 border-0 text-center fw-bold">Status</th>
+                  <th class="py-3 border-0 text-end pe-4 fw-bold">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (processedPayments.length > 0) {
+                    @for (p of processedPayments; track p.paymentId) {
+                        <tr [class.opacity-50]="p.isDeleted">
+                          <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2" style="width:35px; height:35px; font-size:0.8rem">
+                                    {{ getInitials(p.memberName) }}
+                                </div>
+                                <span class="fw-bold text-dark">{{ p.memberName }}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="small text-dark fw-medium">{{ p.groupName }}</div>
+                            <span class="badge bg-light text-dark border fw-normal">Inst #{{ p.installmentNumber }}</span>
+                          </td>
+                          <td>
+                            <div class="fw-bold text-dark">₹{{ p.amount | number }}</div>
+                            <div class="small text-muted">{{ p.paymentMethod }}</div>
+                          </td>
+                          <td>
+                            <div class="small text-muted d-flex align-items-center"><lucide-icon name="calendar" [size]="12" class="me-1"></lucide-icon> {{ p.paymentDate | date }}</div>
+                            <div class="small text-muted d-flex align-items-center mt-1"><lucide-icon name="credit-card" [size]="12" class="me-1"></lucide-icon> {{ p.transactionReference || 'N/A' }}</div>
+                          </td>
+                          <td class="text-center">
+                            @let statusConfig = getStatusConfig(p.status);
+                            <span class="rounded-pill px-3 py-1 d-inline-flex align-items-center fw-semibold text-white" [style.backgroundColor]="statusConfig.bgColor" style="font-size: 0.75rem; white-space: nowrap;">
+                                @if (statusConfig.icon) { <lucide-icon [name]="statusConfig.icon" [size]="12" class="me-1"></lucide-icon> }
+                                {{ statusConfig.label }}
+                            </span>
+                          </td>
+                          <td class="text-end pe-4">
+                            <div class="d-flex justify-content-end gap-1">
+                                <button class="btn btn-light btn-sm text-primary" title="Edit Payment" (click)="handleEditPayment(p)" [disabled]="p.isDeleted"><lucide-icon name="edit-2" [size]="16"></lucide-icon></button>
+                                <button class="btn btn-light btn-sm text-dark" title="View History" (click)="handleViewHistory(p)" [disabled]="p.isDeleted"><lucide-icon name="history" [size]="16"></lucide-icon></button>
+                                <button class="btn btn-light btn-sm text-danger" title="Delete" (click)="handleDeleteClick(p.paymentId)" [disabled]="p.isDeleted"><lucide-icon name="trash-2" [size]="16"></lucide-icon></button>
+                            </div>
+                          </td>
+                        </tr>
+                    }
+                } @else {
+                    <tr><td colspan="6" class="text-center py-5 text-muted">No payments found matching criteria.</td></tr>
+                }
+              </tbody>
+            </table>
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (showModal) { <div class="modal-backdrop fade show"></div> }
+  <div class="modal fade" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0">
+            <h5 class="modal-title fw-bold">{{ isEditMode ? 'Edit Payment' : 'Record New Payment' }}</h5>
+            <button type="button" class="btn-close" (click)="showModal = false"></button>
+        </div>
+        <div class="modal-body">
+            @if (formError) { <div class="alert alert-danger">{{ formError }}</div> }
+            
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="small fw-bold">Select Group</label>
+                    <select class="form-select" [(ngModel)]="formData.chitGroupId" (ngModelChange)="handleGroupChange($event)" required>
+                        <option value="">-- Select Group --</option>
+                        @for (g of groups; track g.chitGroupId) { <option [value]="g.chitGroupId">{{ g.groupName }}</option> }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="small fw-bold">Select Member</label>
+                    <select class="form-select" [(ngModel)]="formData.chitMemberId" (ngModelChange)="handleMemberChange($event)" [disabled]="!formData.chitGroupId" required>
+                        <option value="">-- Select Member --</option>
+                        @for (m of members; track m.chitMemberId) { <option [value]="m.chitMemberId">{{ m.userName }}</option> }
+                    </select>
+                </div>
+            </div>
+            
+            <div class="p-3 bg-light rounded mb-3 border">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted">Installment (Auto)</label>
+                        <div class="fw-bold text-dark">
+                            @if (formData.installmentId) { 
+                                @for(i of installments; track i.installmentId) { @if(i.installmentId === formData.installmentId) { Installment #{{ i.installmentNumber }} } }
+                            } @else { - }
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted">Amount (₹)</label>
+                        <input type="number" class="form-control" [(ngModel)]="formData.amount" required/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="small fw-bold">Payment Date</label>
+                    <input type="date" class="form-control" [(ngModel)]="formData.paymentDate" required/>
+                </div>
+                <div class="col-md-6">
+                    <label class="small fw-bold">Method</label>
+                    <select class="form-select" [(ngModel)]="formData.paymentMethod">
+                        <option value="Cash">Cash</option>
+                        <option value="UPI">UPI</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Cheque">Cheque</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="small fw-bold">Reference ID</label>
+                    <input type="text" class="form-control" placeholder="e.g. UPI Ref" maxlength="40" minlength="6" [(ngModel)]="formData.transactionReference"/>
+                </div>
+                <div class="col-md-6">
+                    <label class="small fw-bold">Status</label>
+                    <select class="form-select" [(ngModel)]="formData.status">
+                        <option value="Completed">Completed</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Failed">Failed</option>
+                    </select>
+                </div>
+                <div class="col-md-12">
+                    <label class="small fw-bold">Remarks</label>
+                    <textarea class="form-control" rows="2" [(ngModel)]="formData.remarks"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer border-0">
+            <button type="button" class="btn btn-light" (click)="showModal = false">Cancel</button>
+            <button type="button" class="btn btn-primary" (click)="handleSubmit()" [disabled]="submitting">
+                @if (submitting) { <div class="spinner-border spinner-border-sm"></div> } @else { Save Payment }
+            </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (showHistoryModal) { <div class="modal-backdrop fade show"></div> }
+  <div class="modal fade" [class.show]="showHistoryModal" [style.display]="showHistoryModal ? 'block' : 'none'" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0">
+            <h5 class="modal-title fw-bold">Payment History</h5>
+            <button type="button" class="btn-close" (click)="showHistoryModal = false"></button>
+        </div>
+        <div class="modal-body p-0">
+            @if (historyLoading) {
+                <div class="text-center p-5"><div class="spinner-border text-primary"></div></div>
+            } @else {
+                <div class="list-group list-group-flush">
+                    @if (auditLogs.length === 0) {
+                        <div class="p-5 text-center text-muted">No history found.</div>
+                    } @else {
+                        @for (log of auditLogs; track log.auditLogId) {
+                            <div class="list-group-item p-4 border-0 border-bottom">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="fw-bold text-dark">{{ log.action }}</span>
+                                    <span class="small text-muted">{{ log.timestamp | date:'medium' }}</span>
+                                </div>
+                                <div class="small text-muted mb-2">by {{ log.username }} ({{ log.userRole }})</div>
+                                <div class="p-2 bg-light rounded small text-dark border-start border-3 border-primary">{{ log.details }}</div>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (showDeleteModal) { <div class="modal-backdrop fade show"></div> }
+  <div class="modal fade" [class.show]="showDeleteModal" [style.display]="showDeleteModal ? 'block' : 'none'" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body text-center p-4">
+            <lucide-icon name="alert-circle" [size]="48" class="text-danger mb-3 opacity-50"></lucide-icon>
+            <h5 class="fw-bold">Delete Payment?</h5>
+            <p class="text-muted small">This action cannot be undone.</p>
+            <div class="d-flex gap-2 justify-content-center mt-4">
+                <button type="button" class="btn btn-light" (click)="showDeleteModal = false">Cancel</button>
+                <button type="button" class="btn btn-danger" (click)="confirmDelete()">Delete</button>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

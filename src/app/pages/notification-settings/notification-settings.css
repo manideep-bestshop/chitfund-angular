@@ -1,0 +1,18 @@
+.custom-switch {
+  transform: scale(1.3);
+  cursor: pointer;
+}
+
+.custom-switch:checked {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.card {
+  transition: box-shadow 0.3s ease;
+}
+
+/* Ensure descriptions wrap nicely */
+h6 {
+  color: #212529;
+}

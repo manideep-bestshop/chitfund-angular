@@ -1,0 +1,219 @@
+<div class="container-fluid py-4">
+  @if (alertMsg) {
+    <div class="alert alert-{{alertMsg.type}} alert-dismissible fade show shadow-sm" role="alert">
+      {{ alertMsg.message }}
+      <button type="button" class="btn-close" (click)="alertMsg = null"></button>
+    </div>
+  }
+
+  @if (loading) {
+    <div class="text-center p-5"><div class="spinner-border text-primary"></div></div>
+  } @else {
+    <div class="card mb-4 border-0 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex flex-column flex-md-row align-items-center">
+          <div class="text-center me-md-5 mb-3 mb-md-0">
+            <img [src]="getInitialsAvatar(profile.fullName)" alt="Profile" class="rounded-circle shadow-sm" style="width: 90px; height: 90px;">
+          </div>
+          
+          <div class="flex-grow-1 text-center text-md-start">
+            <h3 class="mb-1 fw-bold text-dark">{{ profile.fullName }}</h3>
+            <div class="text-muted d-flex gap-4 flex-wrap justify-content-center justify-content-md-start mb-2">
+              <span><lucide-icon name="mail" [size]="16" class="me-2 text-primary"></lucide-icon>{{ profile.email }}</span>
+              <span><lucide-icon name="phone" [size]="16" class="me-2 text-success"></lucide-icon>{{ profile.phoneNumber || 'N/A' }}</span>
+            </div>
+            @if (profile.address) {
+              <div class="text-muted small d-flex gap-3 flex-wrap justify-content-center justify-content-md-start">
+                <span><lucide-icon name="map-pin" [size]="14" class="me-2 text-danger"></lucide-icon>{{ profile.address }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="mt-3 mt-md-0">
+            <button class="btn btn-outline-primary btn-sm px-4" (click)="handleEditClick()">Edit Profile</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-4 mb-3">
+        <div class="card h-100 border-start border-4 border-success shadow-sm">
+          <div class="card-body">
+            <div class="text-muted small text-uppercase">Total Invested</div>
+            <h3 class="fw-bold text-success mb-0">₹{{ stats?.totalInvested?.toLocaleString() ?? 0 }}</h3>
+            <small class="text-muted">Lifetime Contribution</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-3">
+        <div class="card h-100 border-start border-4 border-info shadow-sm">
+          <div class="card-body">
+            <div class="text-muted small text-uppercase">Active Chits</div>
+            <h3 class="fw-bold mb-0">{{ stats?.activeChitCount ?? 0 }}</h3>
+            <small class="text-muted">Currently Active Groups</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-3">
+        <div class="card h-100 border-start border-4 border-warning shadow-sm">
+          <div class="card-body">
+            <div class="text-muted small text-uppercase">Upcoming Payment</div>
+            <h3 class="fw-bold text-danger mb-0">₹{{ stats?.upcomingDueAmount?.toLocaleString() ?? 0 }}</h3>
+            <small class="text-muted">Due in next month</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4 border-0 shadow-sm">
+      <div class="card-body p-3">
+        <div class="row align-items-center">
+          <div class="col-md-4"><h5 class="mb-0 fw-bold text-secondary">Quick Actions</h5></div>
+          <div class="col-md-8 d-flex gap-2 justify-content-md-end flex-wrap">
+            <button class="btn btn-outline-success" (click)="handleDownloadReport()">
+              <lucide-icon name="file-text" [size]="18" class="me-2"></lucide-icon>Download Statement
+            </button>
+            <button class="btn btn-outline-secondary" (click)="showSupportModal = true">
+              <lucide-icon name="info" [size]="18" class="me-2"></lucide-icon>Help & Support
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded shadow-sm p-3 mb-4">
+      <ul class="nav nav-tabs mb-3 fw-bold">
+        <li class="nav-item">
+          <button class="nav-link" [class.active]="activeTab === 'active-groups'" (click)="activeTab = 'active-groups'">My Active Groups</button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" [class.active]="activeTab === 'history'" (click)="activeTab = 'history'">Payment History</button>
+        </li>
+      </ul>
+
+@if (activeTab === 'active-groups') {
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th class="fw-bold">Group Name</th>
+          <th class="fw-bold">Total Value</th>
+          <th class="fw-bold">Monthly Due</th>
+          <th class="fw-bold text-center">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (g of activeGroups; track $index) {
+          <tr>
+            <td class="fw-bold text-primary">{{ g.groupName }}</td>
+            <td>₹{{ g.totalValue?.toLocaleString() }}</td>
+            <td>₹{{ g.monthlyAmount?.toLocaleString() }}</td>
+            <td class="text-center">
+              <span class="badge bg-success bg-opacity-10 text-success px-3">{{ g.status }}</span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+} @else {
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th class="fw-bold">Date</th>
+          <th class="fw-bold">Group</th>
+          <th class="fw-bold">Amount</th>
+          <th class="fw-bold text-center">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of paymentHistory; track $index) {
+          <tr>
+            <td>{{ p.paymentDate | date }}</td>
+            <td class="fw-bold">{{ p.groupName }}</td>
+            <td>₹{{ p.amount?.toLocaleString() }}</td>
+            <td class="text-center">
+              <span class="badge px-3" [ngClass]="{
+                'bg-success bg-opacity-10 text-success': p.status?.toLowerCase() === 'completed',
+                'bg-danger bg-opacity-10 text-danger': p.status?.toLowerCase() === 'failed',
+                'bg-warning bg-opacity-10 text-warning': p.status?.toLowerCase() === 'pending'
+              }">{{ p.status || 'Pending' }}</span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+    </div>
+  }
+</div>
+
+@if (showEditModal) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Edit Profile</h5>
+          <button type="button" class="btn-close" (click)="showEditModal = false"></button>
+        </div>
+        <form (ngSubmit)="submitProfileEdit()">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Full Name</label>
+              <input type="text" class="form-control" [(ngModel)]="editFormData.fullName" name="fullName" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Phone Number</label>
+              <input type="text" class="form-control" [(ngModel)]="editFormData.phoneNumber" name="phone" required>
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label class="form-label small fw-bold">Aadhar</label>
+                <input type="text" class="form-control" [(ngModel)]="editFormData.aadharNumber" name="aadhar">
+              </div>
+              <div class="col-6 mb-3">
+                <label class="form-label small fw-bold">PAN</label>
+                <input type="text" class="form-control" [(ngModel)]="editFormData.panNumber" name="pan">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Address</label>
+              <textarea class="form-control" rows="3" [(ngModel)]="editFormData.address" name="address" required></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-light" (click)="showEditModal = false">Cancel</button>
+            <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showSupportModal) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-light border-0">
+          <h5 class="modal-title fw-bold text-secondary">Help & Support</h5>
+          <button type="button" class="btn-close" (click)="showSupportModal = false"></button>
+        </div>
+        <div class="modal-body p-4 text-center">
+          <div class="bg-primary bg-opacity-10 p-4 rounded mb-4">
+            <h5 class="fw-bold text-primary mb-3">Admin / Agent Contact</h5>
+            <div class="mb-2 fs-5"><strong>support@chitfund.com</strong></div>
+            <div class="mb-0 fs-5"><strong>+91 98765 43210</strong></div>
+          </div>
+          <div class="alert alert-success small">You will get updated in the next 24 hrs.</div>
+          <button class="btn btn-outline-dark" (click)="showSupportModal = false">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

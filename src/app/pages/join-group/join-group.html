@@ -1,0 +1,151 @@
+<div class="page-wrapper">
+  <header class="header">
+    <div class="header-content">
+      <h1 class="header-title">Explore Groups</h1>
+      <div class="icon-button">
+        <lucide-icon name="filter" [size]="20" color="#475569"></lucide-icon>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <div class="tab-container">
+      <button 
+        [class]="activeTab === 'available' ? 'tab-active' : 'tab-inactive'"
+        (click)="activeTab = 'available'">
+        Available Groups
+      </button>
+      <button 
+        [class]="activeTab === 'requests' ? 'tab-active' : 'tab-inactive'"
+        (click)="activeTab = 'requests'">
+        My Requests
+      </button>
+    </div>
+
+    @if (loading) {
+      <div class="text-center p-4 text-muted">Loading...</div>
+    }
+
+    @if (!loading && activeTab === 'available') {
+      <div class="list-container">
+        <div class="search-wrapper">
+          <lucide-icon name="search" [size]="18" class="search-icon"></lucide-icon>
+          <input 
+            type="text" 
+            placeholder="Search by amount (e.g. 50000) or name..." 
+            class="search-input"
+            [(ngModel)]="searchTerm"
+          />
+        </div>
+
+        @if (filteredGroups.length > 0) {
+          @for (group of filteredGroups; track group.chitGroupId) {
+            <div class="custom-card">
+              <div class="card-header-flex">
+                <div>
+                  <h3 class="group-name">{{ group.groupName }}</h3>
+                  <span class="custom-badge">Starts: {{ group.startDate | date:'shortDate' }}</span>
+                </div>
+                <div style="text-align: right;">
+                  <div class="label-text">Total Value</div>
+                  <div class="highlight-value">₹{{ group.totalAmount | number }}</div>
+                </div>
+              </div>
+
+              <div class="info-grid">
+                <div class="info-box">
+                  <div class="label-text">Monthly</div>
+                  <div class="info-value">₹{{ group.monthlyAmount | number }}</div>
+                </div>
+                <div class="info-box">
+                  <div class="label-text">Duration</div>
+                  <div class="info-value">{{ group.durationMonths }} Months</div>
+                </div>
+              </div>
+
+              <div class="card-footer-flex">
+                <div class="member-count">
+                  <lucide-icon name="users" [size]="16" style="margin-right: 4px;"></lucide-icon>
+                  <span>{{ group.currentMembers }} / {{ group.durationMonths }} filled</span>
+                </div>
+                
+                @if (group.currentMembers >= group.durationMonths) {
+                  <button disabled class="btn-disabled">Group Full</button>
+                } @else {
+                  <button class="btn-primary" (click)="handleJoinClick(group)">
+                    Request <lucide-icon name="chevron-right" [size]="16" style="margin-left: 4px;"></lucide-icon>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        } @else {
+          <div class="empty-state">No groups found matching "{{ searchTerm }}"</div>
+        }
+      </div>
+    }
+
+    @if (!loading && activeTab === 'requests') {
+      <div class="list-container">
+        @for (req of myRequests; track req.requestId) {
+          <div class="custom-card flex-between">
+            <div>
+              <h3 class="group-name">{{ req.groupName }}</h3>
+              <div class="sub-text">₹{{ req.monthlyAmount | number }} / month</div>
+              <div class="tiny-text">Requested: {{ req.requestDate | date:'shortDate' }}</div>
+            </div>
+            <div>
+              @if (req.status === 'Pending') {
+                <span class="status-badge" style="background-color: #FEF9C3; color: #854D0E;">
+                  <lucide-icon name="clock" [size]="12" style="margin-right: 4px;"></lucide-icon> Pending
+                </span>
+              }
+              @if (req.status === 'Rejected') {
+                <span class="status-badge" style="background-color: #FEE2E2; color: #991B1B;">
+                  <lucide-icon name="alert-circle" [size]="12" style="margin-right: 4px;"></lucide-icon> Rejected
+                </span>
+              }
+              @if (req.status === 'Approved') {
+                <span class="status-badge" style="background-color: #DCFCE7; color: #166534;">
+                  <lucide-icon name="check-circle" [size]="12" style="margin-right: 4px;"></lucide-icon> Approved
+                </span>
+              }
+            </div>
+          </div>
+        }
+        @if (myRequests.length === 0) {
+          <div class="empty-state">No active requests found.</div>
+        }
+      </div>
+    }
+  </main>
+
+  @if (showModal && selectedGroup) {
+    <div class="modal-overlay">
+      <div class="modal-content">
+        <h3 class="modal-title">Confirm Request</h3>
+        <p class="modal-text">You are requesting to join <strong>{{ selectedGroup.groupName }}</strong>.</p>
+        
+        <div class="modal-summary-box">
+          <div class="flex-between">
+            <span class="label-text">Commitment:</span>
+            <span class="bold-text">₹{{ selectedGroup.monthlyAmount | number }}/mo</span>
+          </div>
+          <div class="flex-between" style="margin-top: 8px;">
+            <span class="label-text">Duration:</span>
+            <span class="bold-text">{{ selectedGroup.durationMonths }} Months</span>
+          </div>
+        </div>
+        
+        <p class="disclaimer-text">
+          By clicking confirm, your profile will be sent to the admin for verification.
+        </p>
+        
+        <div class="modal-actions">
+          <button class="btn-outline" (click)="showModal = false">Cancel</button>
+          <button class="btn-primary-full" (click)="handleConfirmJoin()">Confirm</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

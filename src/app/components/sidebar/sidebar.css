@@ -1,0 +1,191 @@
+:host {
+  --sidebar-bg: #0f172a; 
+  --sidebar-hover: #1e293b; 
+  --sidebar-active: #2563eb; 
+  --sidebar-text: #94a3b8; 
+  --sidebar-text-light: #f8fafc; 
+  --sidebar-width-open: 260px;
+  --sidebar-width-closed: 72px;
+  --transition-speed: 0.3s;
+}
+
+.sidebar {
+  height: 100vh;
+  background-color: var(--sidebar-bg) !important;
+  color: var(--sidebar-text) !important;
+  position: fixed;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  transition: width var(--transition-speed) ease;
+  z-index: 1000;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+  overflow: hidden;
+}
+
+/* --- State Widths --- */
+.sidebar.open { width: var(--sidebar-width-open); }
+.sidebar.closed { width: var(--sidebar-width-closed); }
+
+/* --- Header --- */
+.sidebar-header {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  margin-bottom: 1rem;
+}
+
+.brand-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity 0.2s;
+}
+
+.sidebar.closed .brand-text { display: none; }
+
+.brand-icon {
+  color: var(--sidebar-active) !important;
+  min-width: 28px;
+  display: flex;
+  justify-content: center;
+}
+
+.brand-text h5 { color: var(--sidebar-text-light) !important; letter-spacing: 0.5px; }
+
+.toggle-btn {
+  color: var(--sidebar-text) !important;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.toggle-btn:hover { color: #fff !important; }
+
+/* --- Content Area --- */
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 12px;
+}
+
+.sidebar-content::-webkit-scrollbar { width: 4px; }
+.sidebar-content::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+/* --- Nav Section Labels --- */
+.nav-section-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+  color: #475569 !important;
+  margin: 16px 0 8px 12px;
+  white-space: nowrap;
+}
+
+/* --- Nav Links --- */
+.nav-link-custom {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  color: var(--sidebar-text) !important; /* Force text/icon color */
+  text-decoration: none !important;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.icon-wrapper {
+  min-width: 24px; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.link-text {
+  margin-left: 12px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  opacity: 1;
+  transition: opacity 0.2s;
+}
+
+.sidebar.closed .link-text {
+  opacity: 0;
+  display: none;
+}
+
+.sidebar.closed .nav-link-custom {
+  justify-content: center;
+  padding: 12px 0;
+}
+
+/* Hover & Active States */
+.nav-link-custom:hover {
+  background-color: var(--sidebar-hover) !important;
+  color: var(--sidebar-text-light) !important;
+}
+
+.nav-link-custom.active {
+  background-color: var(--sidebar-active) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+/* --- Footer --- */
+.sidebar-footer {
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding: 16px;
+  background-color: rgba(0,0,0,0.1);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.sidebar.closed .user-info { display: none; }
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: white !important;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.sidebar-footer .user-details .text-muted {
+  color: #94a3b8 !important;
+}
+
+.logout-item {
+  color: #ef4444 !important; /* Red */
+  margin-top: 0;
+}
+
+.logout-item:hover {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  color: #fca5a5 !important;
+}
+
+.sidebar.closed .logout-item {
+  justify-content: center;
+}

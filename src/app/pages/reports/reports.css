@@ -1,0 +1,16 @@
+.reports-page { background-color: #f8fafc; min-height: 100vh; padding: 24px; font-family: 'Inter', sans-serif; }
+.btn-white { background: white; border: 1px solid #dee2e6; }
+
+/* The exact solid purple/blue gradient from the React screenshot */
+.custom-grad {
+  background: linear-gradient(135deg, #6c5ce7 0%, #8b5cf6 100%);
+}
+
+.table thead th { border-bottom: none; }
+.table tbody td { padding-top: 16px; padding-bottom: 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+
+@media print {
+  body * { visibility: hidden; }
+  .reports-page, .reports-page * { visibility: visible; }
+  .no-print { display: none !important; }
+}

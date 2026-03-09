@@ -1,0 +1,240 @@
+<div style="background-color: #f8fafc; min-height: 100vh; padding: 24px;">
+  
+  @if (loading) {
+    <div class="text-center p-5">
+      <div class="spinner-border text-primary" role="status"></div>
+    </div>
+  } @else {
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold text-dark mb-1">Dashboard Overview</h2>
+      <button class="btn btn-white border-0 bg-white shadow-sm p-2 rounded-circle position-relative">
+        <lucide-icon name="bell" [size]="20"></lucide-icon>
+        @if (pendingRequestCount > 0) {
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            {{ pendingRequestCount }}
+          </span>
+        }
+      </button>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-3 col-sm-6">
+        <div class="card border-0 shadow-sm h-100 hover-shadow transition-all">
+          <div class="card-body d-flex align-items-center">
+            <div class="rounded-circle p-3 me-3 bg-primary bg-opacity-10 text-primary">
+              <lucide-icon name="users" [size]="24"></lucide-icon>
+            </div>
+            <div>
+              <h3 class="fw-bold mb-0 text-dark">{{ stats.totalUsers }}</h3>
+              <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.65rem">Total Users</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="card border-0 shadow-sm h-100 hover-shadow transition-all">
+          <div class="card-body d-flex align-items-center">
+            <div class="rounded-circle p-3 me-3 bg-info bg-opacity-10 text-info">
+              <lucide-icon name="layers" [size]="24"></lucide-icon>
+            </div>
+            <div>
+              <h3 class="fw-bold mb-0 text-dark">{{ stats.totalChitGroups }}</h3>
+              <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.65rem">Total Groups</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="card border-0 shadow-sm h-100 hover-shadow transition-all">
+          <div class="card-body d-flex align-items-center">
+            <div class="rounded-circle p-3 me-3 bg-success bg-opacity-10 text-success">
+              <lucide-icon name="indian-rupee" [size]="24"></lucide-icon>
+            </div>
+            <div>
+              <h3 class="fw-bold mb-0 text-dark">{{ stats.totalPayments }}</h3>
+              <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.65rem">Payments</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="card border-0 shadow-sm h-100 hover-shadow transition-all">
+          <div class="card-body d-flex align-items-center">
+            <div class="rounded-circle p-3 me-3 bg-warning bg-opacity-10 text-warning">
+              <lucide-icon name="alert-circle" [size]="24"></lucide-icon>
+            </div>
+            <div>
+              <h3 class="fw-bold mb-0 text-dark">{{ stats.pendingPayments }}</h3>
+              <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.65rem">Pending Due</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-3 col-sm-6">
+        <div class="card border-0 shadow-sm h-100 hover-shadow transition-all">
+          <div class="card-body d-flex align-items-center">
+            <div class="rounded-circle p-3 me-3 bg-primary bg-opacity-10 text-primary">
+              <lucide-icon name="send" [size]="24"></lucide-icon>
+            </div>
+            <div>
+              <h3 class="fw-bold mb-0 text-dark">{{ totalWA }}</h3>
+              <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.65rem">Total Sent</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="card border-0 shadow-sm h-100 hover-shadow transition-all">
+          <div class="card-body d-flex align-items-center">
+            <div class="rounded-circle p-3 me-3 bg-success bg-opacity-10 text-success">
+              <lucide-icon name="check" [size]="24"></lucide-icon>
+            </div>
+            <div>
+              <h3 class="fw-bold mb-0 text-dark">{{ totalDelivered }}</h3>
+              <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.65rem">Delivered</div>
+              <div class="text-success x-small fw-bold" style="font-size: 0.6rem">{{ deliveryRate }}% Success</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="card border-0 shadow-sm h-100 hover-shadow transition-all">
+          <div class="card-body d-flex align-items-center">
+            <div class="rounded-circle p-3 me-3 bg-info bg-opacity-10 text-info">
+              <lucide-icon name="eye" [size]="24"></lucide-icon>
+            </div>
+            <div>
+              <h3 class="fw-bold mb-0 text-dark">{{ readRate }}%</h3>
+              <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.65rem">Read Rate</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="card border-0 shadow-sm h-100 hover-shadow transition-all">
+          <div class="card-body d-flex align-items-center">
+            <div class="rounded-circle p-3 me-3 bg-warning bg-opacity-10 text-warning">
+              <lucide-icon name="message-square" [size]="24"></lucide-icon>
+            </div>
+            <div>
+              <h3 class="fw-bold mb-0 text-dark">{{ whatsappStats.length }}</h3>
+              <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.65rem">Active Alerts</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-8">
+        
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white border-0 py-3">
+            <h5 class="mb-0 fw-bold text-dark">Communication Breakdown</h5>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table align-middle mb-0">
+                <thead class="bg-light text-muted small text-uppercase">
+                  <tr>
+                    <th class="ps-4 fw-bold border-0 py-3">Notification Type</th>
+                    <th class="fw-bold border-0 py-3">Sent</th>
+                    <th class="fw-bold border-0 py-3">Delivered</th>
+                    <th class="fw-bold border-0 py-3">Read</th>
+                    <th class="fw-bold text-end pe-4 border-0 py-3">Engagement</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @if (whatsappStats.length > 0) {
+                    @for (wa of whatsappStats; track wa.messageType) {
+                      <tr>
+                        <td class="ps-4 fw-medium text-dark">{{ wa.messageType }}</td>
+                        <td class="fw-bold">{{ wa.totalSent || 0 }}</td>
+                        <td><span class="badge bg-info bg-opacity-10 text-info fw-bold border-0">{{ wa.deliveredCount || 0 }}</span></td>
+                        <td><span class="badge bg-success bg-opacity-10 text-success fw-bold border-0">{{ wa.readCount || 0 }}</span></td>
+                        <td class="text-end pe-4">
+                          <div class="d-flex align-items-center justify-content-end gap-2">
+                            <span class="small fw-bold">{{ wa.totalSent > 0 ? (wa.readCount / wa.totalSent * 100).toFixed(0) : 0 }}%</span>
+                            <div class="progress" style="height: 6px; width: 60px;">
+                              <div class="progress-bar bg-primary" [style.width.%]="wa.totalSent > 0 ? (wa.readCount / wa.totalSent * 100) : 0"></div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  } @else {
+                    <tr><td colspan="5" class="text-center py-4 text-muted">No communication logs found in database.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-dark">Recent Activity</h5>
+            <button class="btn btn-link btn-sm text-decoration-none fw-bold shadow-none" routerLink="/reports">View All</button>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted small text-uppercase">
+                  <tr>
+                    <th class="ps-4 fw-bold border-0 py-3">Type</th>
+                    <th class="fw-bold border-0 py-3">Description</th>
+                    <th class="fw-bold text-end pe-4 border-0 py-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (act of recentActivities.slice(0, 5); track act.id) {
+                    <tr>
+                      <td class="ps-4"><span class="badge bg-light text-dark border fw-normal">{{ act.type }}</span></td>
+                      <td class="small text-dark fw-medium">{{ act.description }}</td>
+                      <td class="text-end pe-4">
+                        <span class="rounded-pill px-3 py-2 d-inline-flex align-items-center fw-semibold text-white"
+                              [style.backgroundColor]="getStatusConfig(act.status).bg" style="font-size: 0.75rem;">
+                          <lucide-icon [name]="getStatusConfig(act.status).icon" [size]="12" class="me-1"></lucide-icon> {{ act.status }}
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header bg-white border-0 py-3">
+            <h5 class="mb-0 fw-bold text-dark">Quick Actions</h5>
+          </div>
+          <div class="card-body d-flex flex-column gap-3">
+            <button class="btn btn-white w-100 text-start p-3 border shadow-sm d-flex align-items-center justify-content-between bg-white" (click)="handleCreateGroup()">
+              <div class="d-flex align-items-center">
+                <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-3 text-primary"><lucide-icon name="plus" [size]="20"></lucide-icon></div>
+                <div><div class="fw-bold text-dark">New Group</div><div class="small text-muted">Start chit cycle</div></div>
+              </div>
+              <lucide-icon name="chevron-right" [size]="18" class="text-muted"></lucide-icon>
+            </button>
+            <button class="btn btn-white w-100 text-start p-3 border shadow-sm d-flex align-items-center justify-content-between bg-white" (click)="handlePayment()">
+              <div class="d-flex align-items-center">
+                <div class="bg-success bg-opacity-10 p-2 rounded-circle me-3 text-success"><lucide-icon name="credit-card" [size]="20"></lucide-icon></div>
+                <div><div class="fw-bold text-dark">Payment</div><div class="small text-muted">Log installments</div></div>
+              </div>
+              <lucide-icon name="chevron-right" [size]="18" class="text-muted"></lucide-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  }
+</div>

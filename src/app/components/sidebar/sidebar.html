@@ -1,0 +1,106 @@
+<div class="sidebar" [ngClass]="isOpen ? 'open' : 'closed'">
+  
+  <div class="sidebar-header">
+    <div class="brand-container">
+      <div class="brand-icon">
+        <lucide-icon name="hexagon" [size]="28" [strokeWidth]="2.5"></lucide-icon>
+      </div>
+      <div class="brand-text">
+        <h5 class="mb-0 fw-bold">ChitFund</h5>
+        <small class="text-muted" style="font-size: 0.7rem">Management</small>
+      </div>
+    </div>
+    <button class="btn btn-link bg-transparent border-0 shadow-none toggle-btn p-0" (click)="toggle.emit()">
+      <lucide-icon [name]="isOpen ? 'chevron-left' : 'menu'" [size]="20"></lucide-icon>
+    </button>
+  </div>
+
+  <div class="sidebar-content">
+    <div class="nav flex-column gap-1">
+
+      @if (role === 'Member') {
+        @if (isOpen) { <div class="nav-section-label">Personal</div> }
+        
+        <a routerLink="/MemberProfile" routerLinkActive="active" class="nav-link-custom" [title]="!isOpen ? 'My Profile' : ''">
+          <div class="icon-wrapper"><lucide-icon name="user-circle" [size]="20"></lucide-icon></div>
+          <span class="link-text">My Profile</span>
+        </a>
+        <a routerLink="/join-group" routerLinkActive="active" class="nav-link-custom" [title]="!isOpen ? 'join groups' : ''">
+          <div class="icon-wrapper"><lucide-icon name="layers" [size]="20"></lucide-icon></div>
+          <span class="link-text">join groups</span>
+        </a>
+        <a routerLink="/notification-settings" routerLinkActive="active" class="nav-link-custom" [title]="!isOpen ? 'Notfication Settings' : ''">
+            <div class="icon-wrapper"><lucide-icon name="user-plus" [size]="20"></lucide-icon></div>
+            <span class="link-text">Notfication Settings</span>
+          </a>
+
+        @if (isOpen) { <div class="nav-section-label mt-2">Finance</div> }
+        
+        <a routerLink="/auctions" routerLinkActive="active" class="nav-link-custom" [title]="!isOpen ? 'Auctions' : ''">
+          <div class="icon-wrapper"><lucide-icon name="gavel" [size]="20"></lucide-icon></div>
+          <span class="link-text">Auctions</span>
+        </a>
+
+      } @else {
+        @if (hasAccess(['Admin', 'Agent'])) {
+          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link-custom" [title]="!isOpen ? 'Dashboard' : ''">
+            <div class="icon-wrapper"><lucide-icon name="layout-dashboard" [size]="20"></lucide-icon></div>
+            <span class="link-text">Dashboard</span>
+          </a>
+        }
+
+        @if (hasAccess(['Admin', 'Agent']) && isOpen) { <div class="nav-section-label">Management</div> }
+
+        @if (hasAccess(['Admin'])) {
+          <a routerLink="/users" routerLinkActive="active" class="nav-link-custom" [title]="!isOpen ? 'Users Management' : ''">
+            <div class="icon-wrapper"><lucide-icon name="users" [size]="20"></lucide-icon></div>
+            <span class="link-text">Users Management</span>
+          </a>
+        }
+
+        @if (hasAccess(['Admin', 'Agent'])) {
+          <a routerLink="/chit-groups" routerLinkActive="active" class="nav-link-custom" [title]="!isOpen ? 'ChitGroup Management' : ''">
+            <div class="icon-wrapper"><lucide-icon name="user-plus" [size]="20"></lucide-icon></div>
+            <span class="link-text">ChitGroup Management</span>
+          </a>
+        }
+
+        @if (hasAccess(['Admin', 'Agent']) && isOpen) { <div class="nav-section-label mt-2">Finance</div> }
+
+        @if (hasAccess(['Admin', 'Agent'])) {
+          <a routerLink="/auctions" routerLinkActive="active" class="nav-link-custom" [title]="!isOpen ? 'Auctions' : ''">
+            <div class="icon-wrapper"><lucide-icon name="gavel" [size]="20"></lucide-icon></div>
+            <span class="link-text">Auctions</span>
+          </a>
+          <a routerLink="/payments" routerLinkActive="active" class="nav-link-custom" [title]="!isOpen ? 'Payments' : ''">
+            <div class="icon-wrapper"><lucide-icon name="credit-card" [size]="20"></lucide-icon></div>
+            <span class="link-text">Payments</span>
+          </a>
+          <a routerLink="/notification-templates" routerLinkActive="active" class="nav-link-custom" [title]="!isOpen ? 'Notification Templates' : ''">
+            <div class="icon-wrapper"><lucide-icon name="user-plus" [size]="20"></lucide-icon></div>
+            <span class="link-text">Notification Templates</span>
+          </a>
+          <a routerLink="/reports" routerLinkActive="active" class="nav-link-custom" [title]="!isOpen ? 'Reports' : ''">
+            <div class="icon-wrapper"><lucide-icon name="bar-chart-3" [size]="20"></lucide-icon></div>
+            <span class="link-text">Reports</span>
+          </a>
+        }
+      }
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar">{{ userName.charAt(0).toUpperCase() }}</div>
+      <div class="user-details">
+        <span class="fw-bold d-block text-white">{{ userName }}</span>
+        <span class="small text-muted">{{ role }}</span>
+      </div>
+    </div>
+    <div class="nav-link-custom logout-item mb-0" (click)="handleLogout()" [title]="!isOpen ? 'Logout' : ''" style="cursor: pointer;">
+      <div class="icon-wrapper"><lucide-icon name="log-out" [size]="20"></lucide-icon></div>
+      <span class="link-text">Logout</span>
+    </div>
+  </div>
+
+</div>

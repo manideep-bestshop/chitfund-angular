@@ -1,0 +1,79 @@
+<div class="login-wrapper">
+  <div class="container" style="max-width: 420px; width: 100%;">
+    
+    <div class="text-center mb-4">
+      <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 64px; height: 64px;">
+        <lucide-icon name="hexagon" [size]="32" [strokeWidth]="2"></lucide-icon>
+      </div>
+      <h3 class="fw-bold text-dark mb-1">ChitFund</h3>
+      <p class="text-muted">Sign in to manage your organization</p>
+    </div>
+
+    <div class="card border-0 shadow-lg">
+      <div class="card-body p-4 p-md-5">
+        
+        @if (logoutMsg) {
+          <div class="alert alert-success d-flex align-items-center small">
+            <lucide-icon name="check-circle" [size]="16" class="me-2"></lucide-icon> {{ logoutMsg }}
+          </div>
+        }
+        @if (error) {
+          <div class="alert alert-danger d-flex align-items-center small alert-dismissible fade show">
+            <lucide-icon name="alert-circle" [size]="16" class="me-2"></lucide-icon> {{ error }}
+            <button type="button" class="btn-close" (click)="error = null" style="font-size: 0.8rem;"></button>
+          </div>
+        }
+
+        <form (ngSubmit)="handleSubmit()" #loginForm="ngForm">
+          
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-muted mb-2">Email Address</label>
+            <div class="input-group custom-input-group">
+              <span class="input-group-text">
+                <lucide-icon name="mail" [size]="18"></lucide-icon>
+              </span>
+              <input type="email" name="email" class="form-control ps-0" 
+                     placeholder="name@example.com" [(ngModel)]="email" required>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label small fw-bold text-muted mb-2">Password</label>
+            <div class="input-group custom-input-group">
+              <span class="input-group-text">
+                <lucide-icon name="lock" [size]="18"></lucide-icon>
+              </span>
+              <input type="password" name="password" class="form-control ps-0" 
+                     placeholder="••••••••" [(ngModel)]="password" required>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="form-check">
+              <input class="form-check-input shadow-none" type="checkbox" id="rememberMe">
+              <label class="form-check-label small text-muted mt-1" for="rememberMe" style="cursor: pointer;">Remember me</label>
+            </div>
+            <a href="javascript:void(0)" class="small text-decoration-none fw-bold">Forgot Password?</a>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2" 
+                  [disabled]="loading || !loginForm.form.valid">
+            @if (loading) {
+              <div class="spinner-border spinner-border-sm" role="status"></div> Signing In...
+            } @else {
+              Sign In <lucide-icon name="log-in" [size]="18"></lucide-icon>
+            }
+          </button>
+
+        </form>
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <small class="text-muted">
+        Need help? <a href="javascript:void(0)" class="text-decoration-none fw-bold">Contact Support</a>
+      </small>
+    </div>
+
+  </div>
+</div>

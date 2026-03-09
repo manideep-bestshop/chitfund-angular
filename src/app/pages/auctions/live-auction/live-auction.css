@@ -1,0 +1,44 @@
+/* Ensure the overall page allows scrolling */
+:host {
+  display: block;
+  overflow: visible;
+}
+
+.card {
+  /* Removed overflow-hidden to allow children to push height */
+  overflow: visible !important; 
+  margin-bottom: 2rem;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+
+.scale-in {
+  animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Custom scrollbar for activity log */
+.overflow-auto {
+  /* Set a fixed height for just the log if you want the bids to scroll separately */
+  overflow-y: auto;
+}
+
+.overflow-auto::-webkit-scrollbar {
+  width: 4px;
+}
+
+.overflow-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}

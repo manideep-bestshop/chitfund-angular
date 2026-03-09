@@ -1,0 +1,76 @@
+.main-container {
+    background-color: #f8fafc;
+    min-height: 100vh;
+    padding: 24px;
+}
+
+.chit-card {
+    border: none;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.chit-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.inactive-style {
+    opacity: 0.6;
+    filter: grayscale(0.6);
+}
+
+.chit-value {
+    font-size: 1.6rem !important;
+    font-weight: 500 !important;
+    color: #0f172a !important;
+    margin-bottom: 1rem !important;
+    display: block !important;
+}
+
+.label-text {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.data-text {
+    font-weight: 700;
+    color: #334155;
+    white-space: nowrap;
+}
+
+.no-caret::after {
+    display: none !important;
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+    opacity: 0.5;
+    z-index: 1040;
+}
+
+.modal {
+    z-index: 1050;
+}
+
+.btn-white {
+    background-color: #ffffff;
+}
+
+.dropdown-item {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
