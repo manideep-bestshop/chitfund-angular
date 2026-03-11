@@ -4,16 +4,17 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { LucideAngularModule } from 'lucide-angular';
-import { environment } from '../../../environments/environment'; // Added environment import
+import { environment } from '../../../environments/environment';
+import { AppInsightsService } from '../../services/app-insights.service'; // Added
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule],
-  // REMOVED the providers array entirely!
   templateUrl: './login.html'
 })
 export class Login implements OnInit {
+
   email = '';
   password = '';
   loading = false;
@@ -22,8 +23,13 @@ export class Login implements OnInit {
 
   private router = inject(Router);
   private http = inject(HttpClient);
+  private appInsights = inject(AppInsightsService); // Added
 
   ngOnInit() {
+
+    // Track login page view
+    this.appInsights.logPageView('Login Page');
+
     const state = history.state;
     if (state && state.loggedOutMessage) {
       this.logoutMsg = state.loggedOutMessage;
@@ -34,6 +40,7 @@ export class Login implements OnInit {
     const userRole = localStorage.getItem('userRole');
 
     if (token && !this.isTokenExpired(token)) {
+
       const payload = this.decodeJwt(token);
       const expiryTime = (payload.exp * 1000) - Date.now();
 
@@ -44,6 +51,7 @@ export class Login implements OnInit {
       } else {
         this.router.navigate(['/']);
       }
+
     } else {
       localStorage.removeItem('jwtToken');
       localStorage.removeItem('user');
@@ -52,6 +60,7 @@ export class Login implements OnInit {
   }
 
   handleSubmit() {
+
     this.loading = true;
     this.error = null;
 
@@ -59,7 +68,9 @@ export class Login implements OnInit {
       email: this.email,
       password: this.password
     }).subscribe({
+
       next: (res) => {
+
         const { token, user } = res;
 
         localStorage.setItem('jwtToken', token);
@@ -69,14 +80,23 @@ export class Login implements OnInit {
         const payload = this.decodeJwt(token);
         setTimeout(() => this.handleSessionExpiry(), (payload.exp * 1000) - Date.now());
 
+        // Track successful login
+        this.appInsights.trackEvent('User Login Success', { role: user.userRole });
+
         if (user.userRole === 'Member') {
           this.router.navigate(['/MemberProfile']);
         } else {
           this.router.navigate(['/']);
         }
       },
+
       error: (err) => {
+
         this.loading = false;
+
+        // Track login error
+        this.appInsights.logException(err);
+
         if (err.status === 403 && err.error?.message === "Password must be changed on first login") {
           this.router.navigate(['/change-password'], { state: { userId: err.error.userId } });
         } else {
@@ -87,9 +107,14 @@ export class Login implements OnInit {
   }
 
   private handleSessionExpiry() {
+
     localStorage.removeItem('jwtToken');
     localStorage.removeItem('user');
     localStorage.removeItem('userRole');
+
+    // Track session expiry
+    this.appInsights.trackEvent('Session Expired');
+
     alert('Session expired. Please log in again.');
     this.router.navigate(['/login']);
   }
